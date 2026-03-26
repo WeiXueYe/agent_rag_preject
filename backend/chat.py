@@ -1,3 +1,4 @@
+from rag.search_similar_content import search_similar_content
 from tools.translate import tencent_translate
 import os
 from fastapi import APIRouter, Depends, HTTPException
@@ -11,10 +12,12 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 from langchain_community.utilities import SerpAPIWrapper
 from langchain_core.tools import Tool
-
-# 你的自定义模块 (请确保路径正确)
+from langchain_community.embeddings import DashScopeEmbeddings
 from memory.memory_sys import MemoryChatSystem
 from auth import authenticate
+import logging
+
+logger = logging.getLogger("uvicorn")
 
 # 加载环境变量
 load_dotenv()
@@ -39,6 +42,10 @@ llm = ChatOpenAI(
     api_key=API_KEY,
     temperature=0  # Agent 通常需要较低的温度以保持逻辑稳定
 )
+embeddings = DashScopeEmbeddings(
+    model=os.getenv("DASHSCOPE_EMBEDDING_MODEL"),  # 指定你想要的版本
+    dashscope_api_key=os.getenv("DASHSCOPE_API_KEY")  # 或者设置环境变量 DASHSCOPE_API_KEY
+)
 
 router = APIRouter()
 
@@ -52,6 +59,9 @@ tencent_translate函数的参数为text，返回值为翻译后的中文内容
 
 已知对话历史:
 {chat_history}
+
+相关文件内容:
+{file_content}
 
 """
 
@@ -72,7 +82,7 @@ def get_user_set_prompt(supabase, agent_id: int):
         .execute()
     if user_prompt_res.data and len(user_prompt_res.data) > 0:
         userprompt = user_prompt_res.data[0]["prompt"]
-    else: 
+    else:
         userprompt = "默认提示词" 
     return userprompt
 
@@ -88,6 +98,10 @@ async def chat(chat_request: ChatRequest, current_user: dict = Depends(authentic
         token = current_user["token"]
         payload = current_user["payload"]
         user_id = payload["sub"]
+
+
+        # print("测试用")
+        # logger.info("测试日志用")
 
         # 初始化带有 RLS 权限的 Supabase
         supabase = get_supabase_by_token(token)
@@ -108,9 +122,15 @@ async def chat(chat_request: ChatRequest, current_user: dict = Depends(authentic
             search_tool,
         ]
 
+        file_content = search_similar_content(
+            embeddings.embed_query(chat_request.prompt),
+            chat_request.agent_id,
+            supabase)
+        
         AGENT_TMPL = prompt.format(
             user_prompt=get_user_set_prompt(supabase, chat_request.agent_id),
-            chat_history=chat_history
+            chat_history=chat_history,
+            file_content=file_content
         )
         # 创建 Agent 运行链
         agent = create_agent(

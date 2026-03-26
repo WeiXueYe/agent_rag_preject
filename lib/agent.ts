@@ -9,7 +9,7 @@ export default supabase
 
 
 export type Agent = {
-  id?: number;
+  id?: number | null;
   creater?: string;
   created_at?: string;
   agent_name: string;

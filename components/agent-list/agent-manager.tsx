@@ -1,16 +1,21 @@
 'use client'
 
 import { useState, createContext, useContext, useCallback } from 'react'
-import { Agent, updateAgent, getAgents } from '@/lib/agent'
+import { Agent, updateAgent, getAgents, deleteAgent } from '@/lib/agent'
 
 interface AgentContextType {
   selectedAgent: Agent | null
   setSelectedAgent: (agent: Agent | null) => void
+  editingAgent: Agent | null
+  setEditingAgent: (agent: Agent | null) => void
   handleUpdate: (agent: Agent) => Promise<void>
+  handleDelete: (id: number) => Promise<void>
   handleCancelEdit: () => void
   sendAgentInfoToBackend: (agent: Agent) => Promise<void>
   agents: Agent[]
   refreshAgents: () => Promise<void>
+  isEditing: boolean
+  setIsEditing: (isEditing: boolean) => void
 }
 
 const AgentContext = createContext<AgentContextType | undefined>(undefined)
@@ -25,7 +30,9 @@ export function useAgentContext() {
 
 export default function AgentManager({ children }: { children: React.ReactNode }) {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
+  const [editingAgent, setEditingAgent] = useState<Agent | null>(null)
   const [agents, setAgents] = useState<Agent[]>([])
+  const [isEditing, setIsEditing] = useState(false)
 
   const refreshAgents = useCallback(async () => {
     try {
@@ -47,7 +54,20 @@ export default function AgentManager({ children }: { children: React.ReactNode }
   }
 
   const handleCancelEdit = () => {
-    setSelectedAgent(null)
+    // 保持当前选中的agent，不设置为null
+    setIsEditing(false)
+    setEditingAgent(null)
+  }
+
+  const handleDelete = async (id: number) => {
+    try {
+      await deleteAgent(id)
+      await refreshAgents()
+      setIsEditing(false)
+      setEditingAgent(null)
+    } catch (err) {
+      console.error('删除 agent 失败:', err)
+    }
   }
 
   const sendAgentInfoToBackend = async (agent: Agent) => {
@@ -61,7 +81,7 @@ export default function AgentManager({ children }: { children: React.ReactNode }
   }
 
   return (
-    <AgentContext.Provider value={{ selectedAgent, setSelectedAgent, handleUpdate, handleCancelEdit, sendAgentInfoToBackend, agents, refreshAgents }}>
+    <AgentContext.Provider value={{ selectedAgent, setSelectedAgent, editingAgent, setEditingAgent, handleUpdate, handleDelete, handleCancelEdit, sendAgentInfoToBackend, agents, refreshAgents, isEditing, setIsEditing }}>
       {children}
     </AgentContext.Provider>
   )

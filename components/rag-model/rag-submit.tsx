@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { getJwtToken } from "@/app/auth/get-info/get-jwt";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { useAgentContext } from "../agent-list/agent-manager";
+import { Agent } from "@/lib/agent";
 
 interface FileSubmissionFormProps {
   onSuccess?: (response: any) => void;
@@ -13,9 +15,16 @@ interface FileSubmissionFormProps {
 }
 
 export default function RagSubment({ onSuccess, onError }: FileSubmissionFormProps) {
+  const { selectedAgent } = useAgentContext();
   const [files, setFiles] = useState<File[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // 当切换助手时，重置状态
+  useEffect(() => {
+    setFiles([]);
+    setMessage("");
+  }, [selectedAgent]);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -31,6 +40,11 @@ export default function RagSubment({ onSuccess, onError }: FileSubmissionFormPro
       return;
     }
     
+    if (!selectedAgent) {
+      setMessage("请先选择一个Agent");
+      return;
+    }
+    
     setIsLoading(true);
     setMessage("");
     
@@ -39,6 +53,9 @@ export default function RagSubment({ onSuccess, onError }: FileSubmissionFormPro
       files.forEach((file) => {
         formData.append('files', file);
       });
+      console.log(selectedAgent.id)
+      formData.append('agent_id', (selectedAgent?.id ?? '').toString());
+      
       const jwtToken = await getJwtToken();
       if (!jwtToken) {
         throw new Error("无法获取 JWT 令牌，请先登录");
@@ -49,7 +66,7 @@ export default function RagSubment({ onSuccess, onError }: FileSubmissionFormPro
         headers: {
           Authorization: `Bearer ${jwtToken}`,
         },
-        body: formData,
+        body: formData
       });
       
       if (!response.ok) {
@@ -57,6 +74,8 @@ export default function RagSubment({ onSuccess, onError }: FileSubmissionFormPro
       }
       
       const result = await response.json();
+      console.log(result)
+
       setMessage("文件上传成功");
       setFiles([]);
       onSuccess?.(result);
@@ -78,6 +97,7 @@ export default function RagSubment({ onSuccess, onError }: FileSubmissionFormPro
       <form onSubmit={handleSubmit}>
         <CardContent>
           <div className="space-y-4">
+
             <div className="space-y-2">
               <Label htmlFor="file-upload">选择文件</Label>
               <Input

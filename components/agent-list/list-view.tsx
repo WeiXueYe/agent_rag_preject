@@ -9,7 +9,7 @@ export default function ListView() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedAgentId, setSelectedAgentId] = useState<number | null>(null)
-  const { setSelectedAgent, sendAgentInfoToBackend, agents, refreshAgents } = useAgentContext()
+  const { setSelectedAgent, sendAgentInfoToBackend, agents, refreshAgents, setIsEditing, setEditingAgent } = useAgentContext()
 
   // 加载 agents 列表
   useEffect(() => {
@@ -40,18 +40,14 @@ export default function ListView() {
     }
   }
 
-  // 删除 agent
-  const handleDeleteAgent = async (id: number) => {
-    try {
-      await deleteAgent(id)
-      await refreshAgents()
-      if (selectedAgentId === id) {
-        setSelectedAgentId(null)
-      }
-    } catch (err) {
-      console.error('删除 agent 失败:', err)
-      setError('删除 agent 失败')
+  // 编辑 agent
+  const handleEditAgent = async (id: number) => {
+    const agent = agents.find(a => a.id === id)
+    if (agent) {
+      setEditingAgent(agent)
+      setIsEditing(true)
     }
+    console.log('Edit agent ID:', id)
   }
 
   // 处理列表项点击
@@ -86,7 +82,7 @@ export default function ListView() {
             <AgentItem
               key={agent.id}
               agent={agent}
-              onDelete={handleDeleteAgent}
+              onEdit={handleEditAgent}
               onClick={handleAgentClick}
               isSelected={selectedAgentId === agent.id}
             />

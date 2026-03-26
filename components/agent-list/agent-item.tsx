@@ -4,20 +4,20 @@ import { Agent } from '@/lib/agent'
 
 interface AgentItemProps {
   agent: Agent
-  onDelete: (id: number) => void
+  onEdit: (id: number) => void
   onClick: (id: number) => void
   isSelected: boolean
 }
 
 export default function AgentItem({
   agent,
-  onDelete,
+  onEdit,
   onClick,
   isSelected
 }: AgentItemProps) {
-  const handleDeleteClick = (e: React.MouseEvent) => {
+  const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onDelete(agent.id!)
+    onEdit(agent.id!)
   }
 
   return (
@@ -35,10 +35,10 @@ export default function AgentItem({
           </p>
         </div>
         <button
-          className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-          onClick={handleDeleteClick}
+          className="px-3 py-1 bg-white text-gray-800 border border-gray-300 rounded hover:bg-gray-50"
+          onClick={handleEditClick}
         >
-          删除
+          编辑
         </button>
       </div>
     </div>

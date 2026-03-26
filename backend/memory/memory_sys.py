@@ -12,7 +12,7 @@ from typing import List, Dict, Optional
 from memory.profile import ProfileMemory, UserProfile
 from memory.recent_memory import RecentMemory
 from memory.vec_memory import VectorMemory
-
+from rag.search_similar_content import search_similar_content
 
 
 load_dotenv()
@@ -33,6 +33,7 @@ chat_prompt = ChatPromptTemplate.from_messages([
     ("system", "你是一个智能助手"),
     ("system", "【用户画像】\n{profile}"),
     ("system", "【相关记忆】\n{vmemory}"),
+    ("system", "【相关知识】\n{file_content}"),
     ("system", "【最近对话】\n{recent}"),
     ("system", "【用户设置】\n{userprompt}"),
     ("human", "{input}")
@@ -132,6 +133,10 @@ class MemoryChatSystem:
         else: 
             userprompt = "默认提示词" 
         
+        file_content = search_similar_content(
+            embeddings.embed_query(user_input),
+            self.agent_id,
+            self.supabase)
 
         # 构建chain
         chain = chat_prompt | llm | StrOutputParser()
@@ -141,7 +146,8 @@ class MemoryChatSystem:
             "vmemory": "\n".join(vmemories),
             "recent": recent,
             "profile": profile.model_dump(),
-            "userprompt": userprompt
+            "userprompt": userprompt,
+            "file_content": file_content
             })
 
 

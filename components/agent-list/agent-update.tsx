@@ -5,22 +5,22 @@ import { Agent } from '@/lib/agent'
 import { useAgentContext } from './agent-manager'
 
 export default function AgentUpdate() {
-  const { selectedAgent, handleUpdate, handleCancelEdit, sendAgentInfoToBackend } = useAgentContext()
+  const { editingAgent, handleUpdate, handleDelete, handleCancelEdit, sendAgentInfoToBackend } = useAgentContext()
   const [agentName, setAgentName] = useState('')
   const [prompt, setPrompt] = useState('')
 
   useEffect(() => {
-    if (selectedAgent) {
-      setAgentName(selectedAgent.agent_name)
-      setPrompt(selectedAgent.prompt)
+    if (editingAgent) {
+      setAgentName(editingAgent.agent_name)
+      setPrompt(editingAgent.prompt)
     }
-  }, [selectedAgent])
+  }, [editingAgent])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (selectedAgent) {
+    if (editingAgent) {
       const updatedAgent = {
-        ...selectedAgent,
+        ...editingAgent,
         agent_name: agentName,
         prompt: prompt
       }
@@ -29,7 +29,7 @@ export default function AgentUpdate() {
     }
   }
 
-  if (!selectedAgent) {
+  if (!editingAgent) {
     return (
       <div className="p-4 text-center text-gray-500">
         请选择一个助手进行编辑
@@ -64,7 +64,7 @@ export default function AgentUpdate() {
         <div className="flex space-x-2">
           <button
             type="submit"
-            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+            className="flex-1 px-4 py-2 bg-black text-white rounded hover:bg-gray-800 transition-colors"
           >
             保存
           </button>
@@ -74,6 +74,13 @@ export default function AgentUpdate() {
             className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition-colors"
           >
             取消
+          </button>
+          <button
+            type="button"
+            onClick={() => editingAgent && handleDelete(editingAgent.id!)}
+            className="flex-1 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          >
+            删除
           </button>
         </div>
       </form>
