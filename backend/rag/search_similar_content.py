@@ -29,4 +29,4 @@ def search_similar_content(query_vector, agent_id, supabase):
 
     except Exception as e:
         print(f"向量搜索发生错误: {e}")
-        return "知识库搜索暂时不可用。"
+        return "知识库搜索暂时不可用。"	
