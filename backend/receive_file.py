@@ -4,6 +4,7 @@ from auth import authenticate
 import os
 from supabase import create_client, ClientOptions
 from rag.extract_word import extract_words, sliding_window_chunking
+from rag.extract_pdfs import extract_pdfs
 
 
 
@@ -76,6 +77,7 @@ async def upload_files(
                 print(f"处理Word文件: {file.filename}")
                 # Word文件处理逻辑
             elif file_extension == 'pdf':
+                extract_pdfs(file,inserted_id,supabase,agent_id)
                 print(f"处理PDF文件: {file.filename}")
                 # PDF文件处理逻辑
             elif file_extension in ['jpg', 'jpeg', 'png', 'gif', 'bmp']:
