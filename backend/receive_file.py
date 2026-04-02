@@ -79,6 +79,7 @@ async def upload_files(
             elif file_extension == 'pdf':
                 extract_pdfs(file,inserted_id,supabase,agent_id)
                 print(f"处理PDF文件: {file.filename}")
+                
                 # PDF文件处理逻辑
             elif file_extension in ['jpg', 'jpeg', 'png', 'gif', 'bmp']:
                 print(f"处理图片文件: {file.filename}")

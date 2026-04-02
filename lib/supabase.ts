@@ -24,6 +24,9 @@ export const createBook = async (book: Book) => {
   return data
 }
 
+
+
+
 export const getBooks = async () => {
   const { data: books, error } = await supabase.from('books').select()
   if (error) {

@@ -9,6 +9,7 @@ export default function Home() {
 
       <AgentManager>
         <Content />
+        
       </AgentManager>
       
     </main>
