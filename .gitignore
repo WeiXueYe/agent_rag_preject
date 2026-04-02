@@ -40,3 +40,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# 忽略 Python 虚拟环境目录
+venv/
+.venv/
+
+# 忽略 Python 编译缓存目录
+__pycache__/
+
+

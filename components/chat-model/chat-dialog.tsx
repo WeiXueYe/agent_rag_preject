@@ -58,6 +58,7 @@ export default function ChatDialog({ className = "" }: ChatDialogProps) {
           agent_id: selectedAgent.id,
         }),
       });
+      
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -67,6 +68,7 @@ export default function ChatDialog({ className = "" }: ChatDialogProps) {
       }
 
       const data = await response.json();
+      // console.log("获取历史消息响应:",data);
 
       // 转换历史消息格式
       const formattedMessages: Message[] = data.map((msg: any) => ({
